@@ -7,97 +7,119 @@
 //
 
 #import "MasterViewController.h"
+
 #import "DetailViewController.h"
 
-@interface MasterViewController ()
+// ----------------------------------------------------------------------
 
-@property NSMutableArray *objects;
+enum {
+	ROW_Xxx,
+	NUM_ROWS
+};
+static const char *row_titles[] = {
+	"doXxx",
+};
+static NSUInteger NUM_STRS = sizeof(row_titles)/sizeof(row_titles[0]);
+
+// ----------------------------------------------------------------------
+
+static NSString * const SegueID_DetailVC = @"showDetail";
+static NSString * const CellID_BasicCell = @"Cell";
+
+// ----------------------------------------------------------------------
+
+@interface MasterViewController ()
+@property (strong, nonatomic) NSArray *strs;
 @end
+
+// ----------------------------------------------------------------------
+#pragma mark -
+// ----------------------------------------------------------------------
 
 @implementation MasterViewController
 
 - (void)viewDidLoad {
+	MyLog(@"%s", __FUNCTION__);
 	[super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-	self.navigationItem.leftBarButtonItem = self.editButtonItem;
-
-	UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(insertNewObject:)];
-	self.navigationItem.rightBarButtonItem = addButton;
-	self.detailViewController = (DetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
+	self.detailViewController = (DetailViewController *)[self.splitViewController.viewControllers.lastObject topViewController];
+// 	self.strs = @[ @"one", @"two", @"three" ];
+	NSCAssert(NUM_ROWS <= NUM_STRS, @"Missing titles for table rows.");
+	
+	NSMutableArray *strs = @[].mutableCopy;
+	for (int i = 0; i < NUM_ROWS; ++i)
+		[strs addObject:@(row_titles[i])];
+	self.strs = strs.copy;
 }
-
 
 - (void)viewWillAppear:(BOOL)animated {
 	self.clearsSelectionOnViewWillAppear = self.splitViewController.isCollapsed;
 	[super viewWillAppear:animated];
 }
 
-
 - (void)didReceiveMemoryWarning {
 	[super didReceiveMemoryWarning];
 	// Dispose of any resources that can be recreated.
 }
 
-
-- (void)insertNewObject:(id)sender {
-	if (!self.objects) {
-	    self.objects = [[NSMutableArray alloc] init];
-	}
-	[self.objects insertObject:[NSDate date] atIndex:0];
-	NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-	[self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-}
-
-
-#pragma mark - Segues
-
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-	if ([[segue identifier] isEqualToString:@"showDetail"]) {
-	    NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-	    NSDate *object = self.objects[indexPath.row];
-	    DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
-	    [controller setDetailItem:object];
-	    controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
-	    controller.navigationItem.leftItemsSupplementBackButton = YES;
-	}
-}
-
-
-#pragma mark - Table View
+// ----------------------------------------------------------------------
+#pragma mark - UITableViewDataSource
+// ----------------------------------------------------------------------
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
 	return 1;
 }
 
-
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-	return self.objects.count;
+	return self.strs.count;
 }
 
-
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
+	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellID_BasicCell forIndexPath:indexPath];
 
-	NSDate *object = self.objects[indexPath.row];
-	cell.textLabel.text = [object description];
+	cell.textLabel.text = self.strs[indexPath.row];
+//	cell.selectionStyle = UITableViewCellSelectionStyleNone; // or 'setSelected:NO' below
 	return cell;
 }
 
+// ----------------------------------------------------------------------
+#pragma mark - UITableViewDelegate
+// ----------------------------------------------------------------------
 
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-	// Return NO if you do not want the specified item to be editable.
-	return YES;
-}
-
-
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-	if (editingStyle == UITableViewCellEditingStyleDelete) {
-	    [self.objects removeObjectAtIndex:indexPath.row];
-	    [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-	} else if (editingStyle == UITableViewCellEditingStyleInsert) {
-	    // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+	UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+	[cell setSelected:NO animated:YES];
+	
+	switch (indexPath.row) {
+		case ROW_Xxx:
+//			[self doXxx];
+			break;
+		default:
+			break;
 	}
 }
 
+// ----------------------------------------------------------------------
+#pragma mark - Segues
+// ----------------------------------------------------------------------
+
+- (BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
+// 	UITableViewCell *cell = (UITableViewCell *)sender;
+// 	NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+	return YES; // default
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+	if ([segue.identifier isEqualToString:SegueID_DetailVC]) {
+		NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+		NSString *str = self.strs[indexPath.row];
+		DetailViewController *controller = (DetailViewController *)[segue.destinationViewController topViewController];
+		controller.detailItem = str;
+		controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
+		controller.navigationItem.leftItemsSupplementBackButton = YES;
+	}
+}
 
 @end
+
+// ----------------------------------------------------------------------

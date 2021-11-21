@@ -1,0 +1,33 @@
+//
+//  RAC_Tester941.pch
+//  RAC_Tester941
+//
+//  Created by Steve Caine on 11/20/21.
+//  Copyright © 2021 Steve Caine. All rights reserved.
+//
+
+#ifndef RAC_Tester941_pch
+#define RAC_Tester941_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#ifdef __OBJC__
+//#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
+#if DEBUG
+#define USECUSTOMLOGS 	1
+
+#if USECUSTOMLOGS
+#	define NSLog(...) MyLog(__VA_ARGS__)
+#	define MyLog(format, ...) CFShow((__bridge CFStringRef)[NSString stringWithFormat:format, ## __VA_ARGS__])
+#else
+#	define MyLog(format, ...)
+#endif
+
+#endif // DEBUG
+
+#endif // __OBJC__
+
+#endif /* RAC_Tester941_pch */
