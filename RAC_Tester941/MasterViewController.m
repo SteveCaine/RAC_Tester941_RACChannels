@@ -10,14 +10,16 @@
 
 #import "DetailViewController.h"
 
+#import <ReactiveCocoa/ReactiveCocoa.h>
+
 // ----------------------------------------------------------------------
 
 enum {
-	ROW_Xxx,
+	ROW_test_RAC,
 	NUM_ROWS
 };
 static const char *row_titles[] = {
-	"doXxx",
+	"test RAC",
 };
 static NSUInteger NUM_STRS = sizeof(row_titles)/sizeof(row_titles[0]);
 
@@ -35,8 +37,50 @@ static NSString * const CellID_BasicCell = @"Cell";
 // ----------------------------------------------------------------------
 #pragma mark -
 // ----------------------------------------------------------------------
+// some test code copied from project 'CIO_AIS_Tester10'
 
 @implementation MasterViewController
+
+- (void)test_RAC {
+	MyLog(@"%s", __FUNCTION__);
+	
+	NSMutableArray *ma = @[].mutableCopy;
+	
+	NSArray *lower = @[ @"a", @"b", @"c", ];
+	[[[[[lower rac_sequence] signal]
+	   map:^id(NSString *ch) {
+		   return [self signal2upper:ch];
+	   }]
+	  concat]
+	 subscribeNext:^(id x) {
+		 MyLog(@" x = %@", x);
+		 [ma addObject:x];
+	 } completed:^{
+		 MyLog(@" done");
+		 MyLog(@" ma => %@", ma);
+	 }];
+}
+
+// ----------------------------------------------------------------------
+
+- (RACSignal *)signal2upper:(NSString *)s {
+	RACSignal *sig = nil;
+	sig = [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)),
+					   dispatch_get_main_queue(), ^{
+						   [subscriber sendNext:s.uppercaseString];
+						   [subscriber sendCompleted];
+					   });
+		return nil;
+	}];
+	sig.name = s;
+	//	return nil;
+	return sig;
+}
+
+// ----------------------------------------------------------------------
+#pragma mark -
+// ----------------------------------------------------------------------
 
 - (void)viewDidLoad {
 	MyLog(@"%s", __FUNCTION__);
@@ -91,8 +135,8 @@ static NSString * const CellID_BasicCell = @"Cell";
 	[cell setSelected:NO animated:YES];
 	
 	switch (indexPath.row) {
-		case ROW_Xxx:
-//			[self doXxx];
+		case ROW_test_RAC:
+			[self test_RAC];
 			break;
 		default:
 			break;
@@ -106,7 +150,8 @@ static NSString * const CellID_BasicCell = @"Cell";
 - (BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
 // 	UITableViewCell *cell = (UITableViewCell *)sender;
 // 	NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
-	return YES; // default
+//	return YES; // default
+	return NO;
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

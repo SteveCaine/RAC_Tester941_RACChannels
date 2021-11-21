@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -33,6 +33,7 @@
 		8E39DBF32749D40300CECC6B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8E39DBF42749D40300CECC6B /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		8E39DBFB2749D53500CECC6B /* RAC_Tester941.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RAC_Tester941.pch; sourceTree = "<group>"; };
+		8ECF2DA22749E1460063C3CC /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		FE2E4BC59AA2B2CCBDAF2E53 /* Pods_RAC_Tester941.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RAC_Tester941.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -54,13 +55,13 @@
 				09D630D9490EC0B864CD54A0 /* Pods-RAC_Tester941.debug.xcconfig */,
 				3860B6DDBC48B619AD402B2A /* Pods-RAC_Tester941.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
 		8E39DBD62749D40100CECC6B = {
 			isa = PBXGroup;
 			children = (
+				8ECF2DA22749E1460063C3CC /* README.md */,
 				8E39DBE12749D40100CECC6B /* RAC_Tester941 */,
 				8E39DBE02749D40100CECC6B /* Products */,
 				406666D28807BA61AA610E57 /* Pods */,
