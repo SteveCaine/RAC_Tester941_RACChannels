@@ -10,19 +10,30 @@
 
 #import "DetailViewController.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-prototypes"
 #import <ReactiveCocoa/ReactiveCocoa.h>
+#pragma clang diagnostic pop
+
+#import "CIOCategories.h"
+#import "CIOSignals.h"
 
 // ----------------------------------------------------------------------
 
 enum {
 	ROW_test_RAC,
+	ROW_test_Timer,
 	NUM_ROWS
 };
 static const char *row_titles[] = {
 	"test RAC",
+	"test Timer",
 };
 static NSUInteger NUM_STRS = sizeof(row_titles)/sizeof(row_titles[0]);
 
+// ----------------------------------------------------------------------
+#define TEST_INTERVAL	1 // sec
+#define TEST_DELAY		1 // sec
 // ----------------------------------------------------------------------
 
 static NSString * const SegueID_DetailVC = @"showDetail";
@@ -32,6 +43,8 @@ static NSString * const CellID_BasicCell = @"Cell";
 
 @interface MasterViewController ()
 @property (strong, nonatomic) NSArray *strs;
+@property (strong, nonatomic) RACSignal	*signal_appActive;
+@property (strong, nonatomic) RACSignal	*signal_appInactive;
 @end
 
 // ----------------------------------------------------------------------
@@ -79,6 +92,64 @@ static NSString * const CellID_BasicCell = @"Cell";
 }
 
 // ----------------------------------------------------------------------
+
+- (void)testTimer {
+		[[self newTestTimer] subscribeNext:^(id x) {
+			MyLog(@"NEXT: %@", x);
+		} error:^(NSError *error) {
+			MyLog(@"ERRR: %@", error);
+		} completed:^{
+			MyLog(@"completed");
+		}];
+}
+
+// ----------------------------------------------------------------------
+#pragma mark -
+// ----------------------------------------------------------------------
+
+- (void)trackAppActive {
+	static BOOL trackingActive;
+	if (trackingActive == NO) {
+		trackingActive = YES;
+		
+		[[[RACSignal merge:@[
+			CIOSignals.instance.signal_appActive,
+			CIOSignals.instance.signal_appInactive,
+//			[CIOSignals.instance new_fireForever_interval:5]
+		]
+		  ]
+		 filter:^BOOL(id value) {
+			return YES;
+		}]
+		 subscribeNext:^(id x) {
+			static NSUInteger count;
+			NSNotification *note = [NSNotification cio_cast:x];
+			NSDate *date = [NSDate cio_cast:x];
+			if (note)
+				MyLog(@" note -> '%@'", note.name);
+			else if (date) {
+				count += 1;
+				MyLog(@" time -> %@ (%lu)", date, count);
+			}
+			else
+				MyLog(@"NEXT: %@", x);
+		} error:^(NSError *error) {
+			MyLog(@"ERRR: %@", error);
+		} completed:^{
+			MyLog(@"completed");
+		}];
+	}
+}
+
+// ----------------------------------------------------------------------
+
+- (RACSignal *)newTestTimer {
+	return [CIOSignals.instance new_fireForever_interval:TEST_INTERVAL
+												   start:nil
+												   delay:0];
+}
+
+// ----------------------------------------------------------------------
 #pragma mark -
 // ----------------------------------------------------------------------
 
@@ -86,7 +157,8 @@ static NSString * const CellID_BasicCell = @"Cell";
 	MyLog(@"%s", __FUNCTION__);
 	[super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-	self.detailViewController = (DetailViewController *)[self.splitViewController.viewControllers.lastObject topViewController];
+	self.detailViewController = (DetailViewController *)
+		[self.splitViewController.viewControllers.lastObject topViewController];
 // 	self.strs = @[ @"one", @"two", @"three" ];
 	NSCAssert(NUM_ROWS <= NUM_STRS, @"Missing titles for table rows.");
 	
@@ -94,12 +166,28 @@ static NSString * const CellID_BasicCell = @"Cell";
 	for (int i = 0; i < NUM_ROWS; ++i)
 		[strs addObject:@(row_titles[i])];
 	self.strs = strs.copy;
+	
+	[self trackAppActive];
 }
 
+// ----------------------------------------------------------------------
 - (void)viewWillAppear:(BOOL)animated {
 	self.clearsSelectionOnViewWillAppear = self.splitViewController.isCollapsed;
 	[super viewWillAppear:animated];
 }
+- (void)viewDidAppear:(BOOL)animated {
+	MyLog(@"%s", __FUNCTION__);
+	[super viewDidAppear:animated];
+}
+- (void)viewWillDisappear:(BOOL)animated {
+	MyLog(@"%s", __FUNCTION__);
+	[super viewWillDisappear:animated];
+}
+- (void)viewDidDisappear:(BOOL)animated {
+	MyLog(@"%s", __FUNCTION__);
+	[super viewDidDisappear:animated];
+}
+// ----------------------------------------------------------------------
 
 - (void)didReceiveMemoryWarning {
 	[super didReceiveMemoryWarning];
@@ -137,6 +225,9 @@ static NSString * const CellID_BasicCell = @"Cell";
 	switch (indexPath.row) {
 		case ROW_test_RAC:
 			[self test_RAC];
+			break;
+		case ROW_test_Timer:
+			[self testTimer];
 			break;
 		default:
 			break;
