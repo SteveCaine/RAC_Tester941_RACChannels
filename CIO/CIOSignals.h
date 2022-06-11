@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic, readonly) RACSignal *signal_appActive;
 @property (strong, nonatomic, readonly) RACSignal *signal_appInactive;
+@property (strong, nonatomic, readonly) RACSignal *signal_prefsChanged;
 
 + (CIOSignals *)instance;
 

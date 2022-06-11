@@ -7,8 +7,12 @@
 //
 
 #import "AppDelegate.h"
+
 #import "DetailViewController.h"
 
+// ----------------------------------------------------------------------
+static NSString const * KEY_CIOSettingsBundle_AppVersion
+					= @"KEY_CIOSettingsBundle_AppVersion";
 // ----------------------------------------------------------------------
 
 @interface AppDelegate () <UISplitViewControllerDelegate>
@@ -27,6 +31,24 @@
 	UINavigationController *navigationController = splitVC.viewControllers.lastObject;
 	navigationController.topViewController.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem;
 	splitVC.delegate = self;
+
+	// write/update version string for iOS Settings ex. "1.1 (35)"
+	// no need to repeat this code as value is read-only in iOS Settings
+	NSDictionary *info = NSBundle.mainBundle.infoDictionary;
+	NSString *curVersion = info[@"CFBundleShortVersionString"];
+	NSString *curBuild   = info[@"CFBundleVersion"];
+	if (curVersion.length && curBuild.length) {
+		NSString *curString = [NSString stringWithFormat:@"%@ (%@)", curVersion, curBuild];
+#if DEBUG
+		curString = [curString stringByAppendingString:@" debug"];
+#endif
+		NSString *key = (NSString *) KEY_CIOSettingsBundle_AppVersion; // cast away 'const' or Xcode warns!?
+		NSString *prefsString = [NSUserDefaults.standardUserDefaults objectForKey:key];
+		if (NO == [prefsString isEqualToString:curString]) { // includes 'nil' prefsString
+			[NSUserDefaults.standardUserDefaults setObject:curString forKey:key];
+		}
+	}
+	
 	return YES;
 }
 

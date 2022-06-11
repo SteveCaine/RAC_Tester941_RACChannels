@@ -17,8 +17,9 @@
 // ----------------------------------------------------------------------
 
 @interface CIOSignals ()
-@property (strong, nonatomic, readwrite) RACSignal	*signal_appActive;
-@property (strong, nonatomic, readwrite) RACSignal	*signal_appInactive;
+@property (strong, nonatomic, readwrite) RACSignal *signal_appActive;
+@property (strong, nonatomic, readwrite) RACSignal *signal_appInactive;
+@property (strong, nonatomic, readwrite) RACSignal *signal_prefsChanged;
 @end
 
 // ----------------------------------------------------------------------
@@ -52,6 +53,14 @@
 							   takeUntil:[self rac_willDeallocSignal]];
 	}
 	return _signal_appInactive;
+}
+
+- (RACSignal *)signal_prefsChanged {
+	if (_signal_prefsChanged == nil) {
+		_signal_prefsChanged = [[[NSNotificationCenter defaultCenter] rac_addObserverForName:NSUserDefaultsDidChangeNotification object:nil]
+							 takeUntil:[self rac_willDeallocSignal]];
+	}
+	return _signal_prefsChanged;
 }
 
 // ----------------------------------------------------------------------
